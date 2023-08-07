@@ -31,12 +31,12 @@ const Banner = styled.div<{ bgPhoto: string }>`
 `;
 
 const Title = styled.h2`
-  font-size: 68px;
+  font-size: 48px;
   margin-bottom: 20px;
 `;
 
 const Overview = styled.p`
-  font-size: 36px;
+  font-size: 16px;
   width: 50%;
 `;
 
@@ -82,6 +82,26 @@ const Info = styled(motion.div)`
   }
 `;
 
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+`;
+
+const BigMovie = styled(motion.div)`
+  position: fixed;
+  width: 40vw;
+  height: 80vh;
+  top: 10%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  background-color: red;
+`;
+
 const rowVariants = {
   hidden: {
     x: window.outerWidth,
@@ -117,7 +137,6 @@ const offset = 6;
 function Home() {
   const navigate = useNavigate();
   const bigMovieMatch = useMatch("movies/:movieId");
-  console.log(bigMovieMatch);
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
@@ -137,6 +156,7 @@ function Home() {
   const onBoxClicked = (movieId: number) => {
     navigate(`/movies/${movieId}`);
   };
+  const onOverlayClicked = () => navigate(-1);
   return (
     <Wrapper>
       {isLoading ? (
@@ -184,19 +204,14 @@ function Home() {
           </Slider>
           <AnimatePresence>
             {bigMovieMatch ? (
-              <motion.div
-                layoutId={bigMovieMatch.params.movieId}
-                style={{
-                  position: "absolute",
-                  width: "40vw",
-                  height: "80vh",
-                  backgroundColor: "red",
-                  top: 50,
-                  left: 0,
-                  right: 0,
-                  margin: "0 auto",
-                }}
-              ></motion.div>
+              <>
+                <Overlay
+                  onClick={onOverlayClicked}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+                <BigMovie layoutId={bigMovieMatch.params.movieId}></BigMovie>
+              </>
             ) : null}
           </AnimatePresence>
         </>
