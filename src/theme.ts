@@ -6,9 +6,11 @@ export const theme: DefaultTheme = {
     veryDark: "#141414",
     darker: "#181818",
     lighter: "#2F2F2F",
+    veryLight: "#8a8a8a",
   },
   white: {
     lighter: "#fff",
     darker: "#e5e5e5",
+    veryDark: "#cacaca",
   },
 };

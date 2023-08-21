@@ -7,7 +7,12 @@ import { RecoilRoot } from "recoil";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const GlobalStyle = createGlobalStyle`
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -58,12 +63,11 @@ table {
 * {
   box-sizing: border-box;
 }
-body {
-  font-weight: 300;
-  font-family: 'Source Sans Pro', sans-serif;
+body, input, textarea, button {
+  font-weight:lighter;
+  font-family: 'Pretendard-Regular', sans-serif;
   color:${(props) => props.theme.white.darker};
   line-height: 1.2;
-  background-color:black;
 }
 a {
   text-decoration:none;

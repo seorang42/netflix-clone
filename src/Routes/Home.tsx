@@ -1,13 +1,15 @@
 import { useQuery } from "react-query";
-import { IGetMoviesResult, getMovies } from "../api";
+import { IGetMoviesResult, getList } from "../api";
 import { styled } from "styled-components";
+import { Helmet } from "react-helmet";
 import { makeImagePath } from "../utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
 import { useMatch, useNavigate } from "react-router-dom";
+import Slider from "../Slider";
+import Footer from "../Footer";
 
 const Wrapper = styled.div`
-  background: black;
+  background: rgba(20, 20, 20, 1);
   overflow-x: hidden;
   padding-bottom: 200px;
 `;
@@ -20,14 +22,27 @@ const Loader = styled.div`
 `;
 
 const Banner = styled.div<{ bgPhoto: string }>`
-  height: 100vh;
   display: flex;
+  width: 100%;
+  height: fit-content;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
-  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
+  position: relative;
+  aspect-ratio: 16/9;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0) 0%,
+      rgba(20, 20, 20, 0.2) 50%,
+      rgba(20, 20, 20, 1) 100%
+    ),
     url(${(props) => props.bgPhoto});
   background-size: cover;
+`;
+
+const BannerBox = styled.div`
+  width: 50%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Title = styled.h2`
@@ -37,49 +52,32 @@ const Title = styled.h2`
 
 const Overview = styled.p`
   font-size: 16px;
-  width: 50%;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
 `;
 
-const Slider = styled.div`
-  position: relative;
-  top: -100px;
-`;
-
-const Row = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-  position: absolute;
-  width: 100%;
-`;
-
-const Box = styled(motion.div)<{ bgPhoto: string }>`
-  background-color: white;
-  height: 200px;
-  font-size: 24px;
-  background-image: url(${(props) => props.bgPhoto});
-  background-size: cover;
-  background-position: center center;
-  cursor: pointer;
-  &:first-child {
-    transform-origin: center left;
-  }
-  &:last-child {
-    transform-origin: center right;
-  }
-`;
-
-const Info = styled(motion.div)`
-  padding: 10px;
-  background-color: ${(props) => props.theme.black.lighter};
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  h4 {
-    text-align: center;
+const BtnBox = styled.div`
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  div {
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 12px 30px;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+`;
+
+const PlayBtn = styled.div`
+  background-color: white;
+  color: black;
+`;
+
+const InfoBtn = styled.div`
+  color: white;
+  background-color: rgba(138, 138, 138, 0.8);
 `;
 
 const Overlay = styled(motion.div)`
@@ -126,111 +124,72 @@ const BigOverview = styled.p`
   color: ${(props) => props.theme.white.lighter};
 `;
 
-const rowVariants = {
-  hidden: {
-    x: window.outerWidth,
-  },
-  visible: {
-    x: 0,
-  },
-  exit: {
-    x: -window.outerWidth,
-  },
-};
-
-const boxVariants = {
-  normal: {
-    scale: 1,
-  },
-  hover: {
-    scale: 1.3,
-    y: -50,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
-  },
-};
-
-const infoVariants = {
-  hover: {
-    opacity: 1,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
-  },
-};
-
-const offset = 6;
-
 function Home() {
+  const queryFunction = () => {
+    return getList("trending/all/day");
+  };
+  const { data: list, isLoading } = useQuery<IGetMoviesResult>(
+    ["all", "trending"],
+    queryFunction
+  );
   const navigate = useNavigate();
   const bigMovieMatch = useMatch("movies/:movieId");
-  const { data, isLoading } = useQuery<IGetMoviesResult>(
-    ["movies", "nowPlaying"],
-    getMovies
-  );
-  const [index, setIndex] = useState(0);
-  const [leaving, setLeaving] = useState(false);
-  const increaseIndex = () => {
-    if (data) {
-      if (leaving) return;
-      toggleLeaving();
-      const totalMovies = data.results.length - 1;
-      const maxIndex = Math.floor(totalMovies / offset) - 1;
-      setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
-    }
-  };
-  const toggleLeaving = () => setLeaving((prev) => !prev);
-  const onBoxClicked = (movieId: number) => {
-    navigate(`/movies/${movieId}`);
-  };
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const sliderKey = urlSearchParams.get("sliderKey");
+  console.log(bigMovieMatch);
   const onOverlayClicked = () => navigate(-1);
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
-    data?.results.find(
+    list?.results.find(
       (movie) => String(movie.id) === bigMovieMatch.params.movieId
     );
   return (
     <Wrapper>
+      <Helmet>
+        <title>홈 - 넷플릭스</title>
+      </Helmet>
       {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner
-            onClick={increaseIndex}
-            bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
-          >
-            <Title>{data?.results[0].title}</Title>
-            <Overview>{data?.results[0].overview}</Overview>
+          <Banner bgPhoto={makeImagePath(list?.results[0].backdrop_path || "")}>
+            <BannerBox>
+              <Title>{list?.results[0].title}</Title>
+              <Overview>{list?.results[0].overview}</Overview>
+              <BtnBox>
+                <PlayBtn>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1em"
+                    viewBox="0 0 384 512"
+                    fill="currentColor"
+                  >
+                    <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z" />
+                  </svg>
+                  <span>재생</span>
+                </PlayBtn>
+                <InfoBtn>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1em"
+                    viewBox="0 0 512 512"
+                    fill="currentColor"
+                  >
+                    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
+                  </svg>
+                  <span>상세 정보</span>
+                </InfoBtn>
+              </BtnBox>
+            </BannerBox>
           </Banner>
-          <Slider>
-            <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
-              <Row
-                variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween", duration: 1 }}
-                key={index}
-              >
-                {data?.results
-                  .slice(1)
-                  .slice(offset * index, offset * index + offset)
-                  .map((movie) => (
-                    <Box
-                      layoutId={movie.id + ""}
-                      key={movie.id}
-                      variants={boxVariants}
-                      initial="normal"
-                      whileHover="hover"
-                      transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(movie.id)}
-                      bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
-                    >
-                      <Info variants={infoVariants}>
-                        <h4>{movie.title}</h4>
-                      </Info>
-                    </Box>
-                  ))}
-              </Row>
-            </AnimatePresence>
-          </Slider>
+          <Slider
+            start={1}
+            sliderKey="1"
+            title="지금 뜨는 콘텐츠"
+            type="trending/all/day"
+          />
+          <Slider sliderKey="2" title="인기 있는 영화" type="movie/popular" />
+          <Slider sliderKey="3" title="인기 있는 시리즈" type="tv/popular" />
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
@@ -239,7 +198,11 @@ function Home() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 />
-                <BigMovie layoutId={bigMovieMatch.params.movieId}>
+                <BigMovie
+                  layoutId={
+                    bigMovieMatch.params.movieId + `?sliderKey=${sliderKey}`
+                  }
+                >
                   {clickedMovie && (
                     <>
                       <BigCover
@@ -260,6 +223,7 @@ function Home() {
           </AnimatePresence>
         </>
       )}
+      <Footer />
     </Wrapper>
   );
 }

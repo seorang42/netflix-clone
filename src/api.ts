@@ -1,6 +1,3 @@
-const API_KEY = "d9813bd5b92230bf6a02b02506c10734";
-const BASE_PATH = "https://api.themoviedb.org/3";
-
 export interface IMovie {
   id: number;
   backdrop_path: string;
@@ -20,8 +17,18 @@ export interface IGetMoviesResult {
   total_results: number;
 }
 
-export function getMovies() {
+export function getList(type: string) {
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkOTgxM2JkNWI5MjIzMGJmNmEwMmIwMjUwNmMxMDczNCIsInN1YiI6IjY0Y2UzM2RkNmQ0Yzk3MDE0ZjQxZmRkNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.20S5RVLoYPQZ4mur6abACSuChhsz45VxqaByiSEFxng",
+    },
+  };
+
   return fetch(
-    `${BASE_PATH}//movie/now_playing?api_key=${API_KEY}&language=ko&page=1&region=kr`
+    `https://api.themoviedb.org/3/${type}?language=ko&region=kr`,
+    options
   ).then((response) => response.json());
 }
