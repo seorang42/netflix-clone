@@ -7,11 +7,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useMatch, useNavigate } from "react-router-dom";
 import Slider from "../Slider";
 import Footer from "../Footer";
+import Top10Slider from "../Top10Slider";
 
 const Wrapper = styled.div`
-  background: rgba(20, 20, 20, 1);
+  background-color: rgba(20, 20, 20, 1);
   overflow-x: hidden;
-  padding-bottom: 200px;
+  padding-bottom: 15px;
 `;
 
 const Loader = styled.div`
@@ -80,6 +81,12 @@ const InfoBtn = styled.div`
   background-color: rgba(138, 138, 138, 0.8);
 `;
 
+const SliderBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: -290px;
+`;
+
 const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -136,7 +143,6 @@ function Home() {
   const bigMovieMatch = useMatch("movies/:movieId");
   const urlSearchParams = new URLSearchParams(window.location.search);
   const sliderKey = urlSearchParams.get("sliderKey");
-  console.log(bigMovieMatch);
   const onOverlayClicked = () => navigate(-1);
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
@@ -154,7 +160,11 @@ function Home() {
         <>
           <Banner bgPhoto={makeImagePath(list?.results[0].backdrop_path || "")}>
             <BannerBox>
-              <Title>{list?.results[0].title}</Title>
+              <Title>
+                {list?.results[0].title !== undefined
+                  ? list?.results[0].title
+                  : list?.results[0].name}
+              </Title>
               <Overview>{list?.results[0].overview}</Overview>
               <BtnBox>
                 <PlayBtn>
@@ -182,14 +192,34 @@ function Home() {
               </BtnBox>
             </BannerBox>
           </Banner>
-          <Slider
-            start={1}
-            sliderKey="1"
-            title="지금 뜨는 콘텐츠"
-            type="trending/all/day"
-          />
-          <Slider sliderKey="2" title="인기 있는 영화" type="movie/popular" />
-          <Slider sliderKey="3" title="인기 있는 시리즈" type="tv/popular" />
+          <SliderBox>
+            <Slider
+              start={1}
+              sliderKey="1"
+              title="지금 뜨는 콘텐츠"
+              type="trending/all/day"
+            />
+            <Top10Slider
+              sliderKey="4"
+              title="오늘의 TOP 10 영화"
+              type="trending/movie/day"
+            />
+            <Slider
+              sliderKey="2"
+              title="최고의 평가를 받은 영화"
+              type="movie/top_rated"
+            />
+            <Top10Slider
+              sliderKey="4"
+              title="오늘의 TOP 10 시리즈"
+              type="trending/tv/day"
+            />
+            <Slider
+              sliderKey="3"
+              title="최고의 평가를 받은 시리즈"
+              type="tv/top_rated"
+            />
+          </SliderBox>
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
@@ -213,7 +243,11 @@ function Home() {
                           )})`,
                         }}
                       />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
+                      <BigTitle>
+                        {clickedMovie.title !== undefined
+                          ? clickedMovie.title
+                          : clickedMovie.name}
+                      </BigTitle>
                       <BigOverview>{clickedMovie.overview}</BigOverview>
                     </>
                   )}

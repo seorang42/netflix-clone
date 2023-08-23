@@ -68,6 +68,7 @@ body, input, textarea, button {
   font-family: 'Pretendard-Regular', sans-serif;
   color:${(props) => props.theme.white.darker};
   line-height: 1.2;
+  background-color: rgba(20, 20, 20, 1);
 }
 a {
   text-decoration:none;

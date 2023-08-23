@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 import { styled } from "styled-components";
-import { backAtom, boxHeightAtom } from "./atoms";
+import { backAtom, top10BoxHeightAtom } from "./atoms";
 import { useNavigate } from "react-router-dom";
 import { makeImagePath } from "./utils";
 import { IGetMoviesResult, getList } from "./api";
@@ -66,15 +66,14 @@ const Row = styled(motion.div)`
   padding: 0 60px;
 `;
 
-const Box = styled(motion.div)<{ bgPhoto: string }>`
-  background-color: white;
+const Box = styled(motion.div)`
   width: ${window.outerWidth / 6};
-  aspect-ratio: 16/9;
+  display: flex;
+  position: relative;
+  aspect-ratio: 4/3;
   font-size: 24px;
-  background-image: url(${(props) => props.bgPhoto});
-  background-size: cover;
-  background-position: center center;
   border-radius: 5px;
+  overflow: hidden;
   cursor: pointer;
   &:first-child {
     transform-origin: center left;
@@ -82,6 +81,24 @@ const Box = styled(motion.div)<{ bgPhoto: string }>`
   &:last-child {
     transform-origin: center right;
   }
+`;
+
+const Ranking = styled.div`
+  width: 50%;
+  font-size: 14rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: black;
+  padding-left: 30px;
+  -webkit-text-stroke: 4px rgba(121, 121, 121, 1);
+`;
+
+const Poster = styled.div<{ bgPhoto: string }>`
+  width: 50%;
+  background-image: url(${(props) => props.bgPhoto});
+  background-size: cover;
+  background-position: center center;
 `;
 
 const SliderPrevBtn = styled.span`
@@ -166,7 +183,7 @@ interface ISlider {
   sliderKey: string;
 }
 
-function Slider({ start, title, type, sliderKey }: ISlider) {
+function Top10Slider({ title, type, sliderKey }: ISlider) {
   const queryFunction = () => {
     return getList(type);
   };
@@ -174,16 +191,18 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
     [{ type }],
     queryFunction
   );
+  const top10List = list?.results.slice(0, 10);
   const boxRef = useRef<any>(null);
   const navigate = useNavigate();
-  const [boxHeight, setBoxHeight] = useRecoilState(boxHeightAtom);
+  const [top10BoxHeight, setTop10BoxHeight] =
+    useRecoilState(top10BoxHeightAtom);
   const [back, setBack] = useRecoilState(backAtom);
   const [leaving, setLeaving] = useState(false);
   const [index, setIndex] = useState(0);
   useEffect(() => {
     const handleResize = () => {
       if (boxRef.current && list && !isLoading) {
-        setBoxHeight(boxRef.current.clientHeight);
+        setTop10BoxHeight(boxRef.current.clientHeight);
       }
     };
     handleResize();
@@ -193,21 +212,21 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
     };
   }, [list, isLoading]);
   const increaseIndex = () => {
-    if (list) {
+    if (top10List) {
       if (leaving) return;
       toggleLeaving();
-      const totalMovies = list.results.length - 1;
-      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const totalMovies = top10List.length - 1;
+      const maxIndex = Math.ceil(totalMovies / offset) - 1;
       setBack(false);
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
   const decreaseIndex = () => {
-    if (list) {
+    if (top10List) {
       if (leaving) return;
       toggleLeaving();
-      const totalMovies = list.results.length - 1;
-      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const totalMovies = top10List.length - 1;
+      const maxIndex = Math.ceil(totalMovies / offset);
       setBack(true);
       setIndex((prev) => (prev === 0 ? maxIndex : prev - 1));
     }
@@ -218,7 +237,7 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
     document.title = `${movieTitle} - 넷플릭스`;
   };
   return (
-    <SliderWrapper boxHeight={boxHeight}>
+    <SliderWrapper boxHeight={top10BoxHeight}>
       <SliderTitleBox initial="rest" whileHover="hover" animate="rest">
         <SliderTitle>{title}</SliderTitle>
         <SliderMore>
@@ -254,10 +273,9 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
           transition={{ type: "tween", duration: 1 }}
           key={index}
         >
-          {list?.results
-            .slice(start)
-            .slice(offset * index, offset * index + offset)
-            .map((movie) => (
+          {top10List
+            ?.slice(offset * index, offset * index + offset)
+            .map((movie, sliderIndex) => (
               <Box
                 ref={boxRef}
                 key={movie.id}
@@ -267,13 +285,11 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
                 whileHover="hover"
                 transition={{ type: "tween" }}
                 onClick={() => onBoxClicked(movie.id, movie.title)}
-                bgPhoto={makeImagePath(
-                  movie.backdrop_path !== null
-                    ? movie.backdrop_path
-                    : movie.poster_path,
-                  "w500"
-                )}
               >
+                <Ranking>{sliderIndex + 1 + offset * index}</Ranking>
+                <Poster
+                  bgPhoto={makeImagePath(movie.poster_path, "w500")}
+                ></Poster>
                 <Info variants={infoVariants}>
                   <h4>
                     {movie.title !== undefined ? movie.title : movie.name}
@@ -307,4 +323,4 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
   );
 }
 
-export default Slider;
+export default Top10Slider;
