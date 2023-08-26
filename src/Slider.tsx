@@ -7,12 +7,13 @@ import { useNavigate } from "react-router-dom";
 import { makeImagePath } from "./utils";
 import { IGetMoviesResult, getList } from "./api";
 import { useQuery } from "react-query";
+import HoverInfo from "./HoverInfo";
 
 const SliderWrapper = styled.div<{ boxHeight: number }>`
   position: relative;
   margin-top: 90px;
   height: ${(props) => `${props.boxHeight}px`};
-  span {
+  p {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -22,13 +23,13 @@ const SliderWrapper = styled.div<{ boxHeight: number }>`
     background-color: rgba(255, 255, 255, 0.1);
     cursor: pointer;
   }
-  &:hover span svg {
+  &:hover p svg {
     opacity: 1;
   }
-  span svg {
+  p svg {
     transition: scale 0.1s ease-in;
   }
-  span:hover svg {
+  p:hover svg {
     scale: 1.3;
   }
   &:hover h1 h2:last-child {
@@ -55,6 +56,7 @@ const SliderMore = styled.h2`
   color: rgba(84, 185, 197, 1);
   align-items: center;
   transform: translateY(3px);
+  cursor: pointer;
 `;
 
 const Row = styled(motion.div)`
@@ -66,15 +68,11 @@ const Row = styled(motion.div)`
   padding: 0 60px;
 `;
 
-const Box = styled(motion.div)<{ bgPhoto: string }>`
-  background-color: white;
+const Box = styled(motion.div)`
   width: ${window.outerWidth / 6};
   aspect-ratio: 16/9;
   font-size: 24px;
-  background-image: url(${(props) => props.bgPhoto});
-  background-size: cover;
-  background-position: center center;
-  border-radius: 5px;
+  position: relative;
   cursor: pointer;
   &:first-child {
     transform-origin: center left;
@@ -82,9 +80,17 @@ const Box = styled(motion.div)<{ bgPhoto: string }>`
   &:last-child {
     transform-origin: center right;
   }
+  img {
+    position: absolute;
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+    background-size: cover;
+    background-position: center center;
+  }
 `;
 
-const SliderPrevBtn = styled.span`
+const SliderPrevBtn = styled.p`
   left: 0;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
@@ -94,26 +100,13 @@ const SliderPrevBtn = styled.span`
   }
 `;
 
-const SliderNextBtn = styled.span`
+const SliderNextBtn = styled.p`
   right: 0;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
   svg {
     font-size: 1.5rem;
     opacity: 0;
-  }
-`;
-
-const Info = styled(motion.div)`
-  padding: 10px;
-  background-color: ${(props) => props.theme.black.lighter};
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  h4 {
-    text-align: center;
-    font-size: 18px;
   }
 `;
 
@@ -132,28 +125,33 @@ const rowVariants = {
 const boxVariants = {
   normal: {
     scale: 1,
+    zIndex: 2,
   },
   hover: {
-    scale: 1.3,
-    y: -50,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
+    scale: 1.5,
+    y: -75,
+    zIndex: 3,
+    transition: {
+      delay: 0.5,
+      duration: 0.2,
+      type: "tween",
+    },
   },
+  rest: { scale: 1, zIndex: 2 },
 };
 
-const infoVariants = {
-  hover: {
-    opacity: 1,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
-  },
+const boxImgVariants = {
+  normal: { zIndex: 2 },
+  hover: { zIndex: 3 },
 };
 
 const sliderMorePVariants = {
-  rest: { x: -10, opacity: 0 },
+  normal: { x: -10, opacity: 0 },
   hover: { x: 0, opacity: 1, transition: { delay: 0.2, type: "tween" } },
 };
 
 const sliderMoreSVGVariants = {
-  rest: { scale: 1.2, x: -60, transition: { delay: 0.2, type: "tween" } },
+  normal: { scale: 1.2, x: -60, transition: { delay: 0.2, type: "tween" } },
   hover: { scale: 0.9, x: 5 },
 };
 
@@ -219,15 +217,15 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
   };
   return (
     <SliderWrapper boxHeight={boxHeight}>
-      <SliderTitleBox initial="rest" whileHover="hover" animate="rest">
+      <SliderTitleBox initial="normal" whileHover="hover" animate="normal">
         <SliderTitle>{title}</SliderTitle>
         <SliderMore>
-          <motion.p
+          <motion.span
             variants={sliderMorePVariants}
             transition={{ type: "tween" }}
           >
             모두 보기
-          </motion.p>
+          </motion.span>
           <motion.svg
             variants={sliderMoreSVGVariants}
             transition={{ type: "tween" }}
@@ -265,20 +263,20 @@ function Slider({ start, title, type, sliderKey }: ISlider) {
                 variants={boxVariants}
                 initial="normal"
                 whileHover="hover"
+                animate="rest"
                 transition={{ type: "tween" }}
                 onClick={() => onBoxClicked(movie.id, movie.title)}
-                bgPhoto={makeImagePath(
-                  movie.backdrop_path !== null
-                    ? movie.backdrop_path
-                    : movie.poster_path,
-                  "w500"
-                )}
               >
-                <Info variants={infoVariants}>
-                  <h4>
-                    {movie.title !== undefined ? movie.title : movie.name}
-                  </h4>
-                </Info>
+                <motion.img
+                  variants={boxImgVariants}
+                  src={makeImagePath(
+                    movie.backdrop_path !== null
+                      ? movie.backdrop_path
+                      : movie.poster_path,
+                    "w500"
+                  )}
+                />
+                <HoverInfo movie={movie} />
               </Box>
             ))}
         </Row>

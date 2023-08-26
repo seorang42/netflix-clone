@@ -7,12 +7,13 @@ import { useNavigate } from "react-router-dom";
 import { makeImagePath } from "./utils";
 import { IGetMoviesResult, getList } from "./api";
 import { useQuery } from "react-query";
+import HoverInfo from "./HoverInfo";
 
 const SliderWrapper = styled.div<{ boxHeight: number }>`
   position: relative;
   margin-top: 90px;
   height: ${(props) => `${props.boxHeight}px`};
-  span {
+  p {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -22,13 +23,13 @@ const SliderWrapper = styled.div<{ boxHeight: number }>`
     background-color: rgba(255, 255, 255, 0.1);
     cursor: pointer;
   }
-  &:hover span svg {
+  &:hover p svg {
     opacity: 1;
   }
-  span svg {
+  p svg {
     transition: scale 0.1s ease-in;
   }
-  span:hover svg {
+  p:hover svg {
     scale: 1.3;
   }
   &:hover h1 h2:last-child {
@@ -73,7 +74,6 @@ const Box = styled(motion.div)`
   aspect-ratio: 4/3;
   font-size: 24px;
   border-radius: 5px;
-  overflow: hidden;
   cursor: pointer;
   &:first-child {
     transform-origin: center left;
@@ -81,6 +81,20 @@ const Box = styled(motion.div)`
   &:last-child {
     transform-origin: center right;
   }
+  img {
+    position: absolute;
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+    background-size: cover;
+    background-position: center center;
+    opacity: 0;
+  }
+`;
+
+const BeforeBox = styled(motion.div)`
+  display: flex;
+  width: 100%;
 `;
 
 const Ranking = styled.div`
@@ -101,7 +115,7 @@ const Poster = styled.div<{ bgPhoto: string }>`
   background-position: center center;
 `;
 
-const SliderPrevBtn = styled.span`
+const SliderPrevBtn = styled.p`
   left: 0;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
@@ -111,26 +125,13 @@ const SliderPrevBtn = styled.span`
   }
 `;
 
-const SliderNextBtn = styled.span`
+const SliderNextBtn = styled.p`
   right: 0;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
   svg {
     font-size: 1.5rem;
     opacity: 0;
-  }
-`;
-
-const Info = styled(motion.div)`
-  padding: 10px;
-  background-color: ${(props) => props.theme.black.lighter};
-  opacity: 0;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  h4 {
-    text-align: center;
-    font-size: 18px;
   }
 `;
 
@@ -149,19 +150,70 @@ const rowVariants = {
 const boxVariants = {
   normal: {
     scale: 1,
+    zIndex: 2,
+    aspectRatio: 4 / 3,
+    overflow: "hidden",
   },
   hover: {
-    scale: 1.3,
-    y: -50,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
+    overflow: "visible",
+    aspectRatio: 16 / 9,
+    scale: 1.5,
+    y: -75,
+    zIndex: 3,
+    transition: {
+      delay: 0.5,
+      duration: 0.2,
+      type: "tween",
+      aspectRatio: { duration: 0 },
+      opacity: { duration: 0 },
+      overflow: { duration: 0 },
+    },
+  },
+  rest: {
+    overflow: "hidden",
+    scale: 1,
+    zIndex: 2,
+    aspectRatio: 4 / 3,
+    transition: { aspectRatio: { delay: 0.2 }, overflow: { delay: 0.2 } },
   },
 };
 
-const infoVariants = {
+const beforeBoxVariants = {
+  normal: { scale: 1, opacity: 1 },
   hover: {
-    opacity: 1,
-    transition: { delay: 0.5, duration: 0.3, type: "tween" },
+    scale: 0,
+    opacity: 0,
+    transition: {
+      delay: 0.5,
+      type: "tween",
+      opacity: { duration: 0 },
+      scale: { duration: 0 },
+    },
   },
+  rest: {
+    scale: 1,
+    opacity: 1,
+    transition: { opacity: { delay: 0.1 }, scale: { delay: 0.1 } },
+  },
+};
+
+const boxImgVariants = {
+  normal: {
+    zIndex: 2,
+    scale: 0,
+  },
+  hover: {
+    scale: 1,
+    opacity: 1,
+    zIndex: 3,
+    transition: {
+      delay: 0.5,
+      duration: 0.2,
+      type: "tween",
+      scale: { duration: 0 },
+    },
+  },
+  rest: { scale: 0, transition: { scale: { delay: 0.2 } } },
 };
 
 const sliderMorePVariants = {
@@ -241,12 +293,12 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
       <SliderTitleBox initial="rest" whileHover="hover" animate="rest">
         <SliderTitle>{title}</SliderTitle>
         <SliderMore>
-          <motion.p
+          <motion.span
             variants={sliderMorePVariants}
             transition={{ type: "tween" }}
           >
             모두 보기
-          </motion.p>
+          </motion.span>
           <motion.svg
             variants={sliderMoreSVGVariants}
             transition={{ type: "tween" }}
@@ -283,18 +335,24 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
                 variants={boxVariants}
                 initial="normal"
                 whileHover="hover"
+                animate="rest"
                 transition={{ type: "tween" }}
                 onClick={() => onBoxClicked(movie.id, movie.title)}
               >
-                <Ranking>{sliderIndex + 1 + offset * index}</Ranking>
-                <Poster
-                  bgPhoto={makeImagePath(movie.poster_path, "w500")}
-                ></Poster>
-                <Info variants={infoVariants}>
-                  <h4>
-                    {movie.title !== undefined ? movie.title : movie.name}
-                  </h4>
-                </Info>
+                <BeforeBox variants={beforeBoxVariants}>
+                  <Ranking>{sliderIndex + 1 + offset * index}</Ranking>
+                  <Poster bgPhoto={makeImagePath(movie.poster_path, "w500")} />
+                </BeforeBox>
+                <motion.img
+                  variants={boxImgVariants}
+                  src={makeImagePath(
+                    movie.backdrop_path !== null
+                      ? movie.backdrop_path
+                      : movie.poster_path,
+                    "w500"
+                  )}
+                />
+                <HoverInfo movie={movie} />
               </Box>
             ))}
         </Row>

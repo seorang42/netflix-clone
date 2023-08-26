@@ -5,6 +5,7 @@ import { ThemeProvider, createGlobalStyle } from "styled-components";
 import { theme } from "./theme";
 import { RecoilRoot } from "recoil";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { StyledEngineProvider } from "@mui/material";
 
 const GlobalStyle = createGlobalStyle`
 @font-face {
@@ -86,8 +87,10 @@ root.render(
     <RecoilRoot>
       <QueryClientProvider client={client}>
         <ThemeProvider theme={theme}>
-          <GlobalStyle />
-          <App />
+          <StyledEngineProvider injectFirst>
+            <GlobalStyle />
+            <App />
+          </StyledEngineProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </RecoilRoot>

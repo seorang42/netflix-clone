@@ -5,6 +5,9 @@ export interface IMovie {
   title: string;
   overview: string;
   name: string;
+  vote_average: number;
+  vote_count: number;
+  adult: boolean;
 }
 
 export interface IGetMoviesResult {

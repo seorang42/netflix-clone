@@ -8,6 +8,7 @@ import { useMatch, useNavigate } from "react-router-dom";
 import Slider from "../Slider";
 import Footer from "../Footer";
 import Top10Slider from "../Top10Slider";
+import RatingBar from "../RatingBar";
 
 const Wrapper = styled.div`
   background-color: rgba(20, 20, 20, 1);
