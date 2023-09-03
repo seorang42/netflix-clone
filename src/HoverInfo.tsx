@@ -14,10 +14,6 @@ const Info = styled(motion.div)`
   top: 95%;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
-  h4 {
-    text-align: center;
-    font-size: 18px;
-  }
 `;
 
 const InfoBtn = styled(motion.div)`
@@ -36,12 +32,12 @@ const InfoBtn = styled(motion.div)`
 const InfoBtnBox = styled.div`
   display: flex;
   position: relative;
-  ${InfoBtn}:first-child {
+  & > ${InfoBtn}:first-child {
     background-color: white;
     color: black;
     border: none;
   }
-  ${InfoBtn}:last-child {
+  & > ${InfoBtn}:last-child {
     position: absolute;
     left: auto;
     right: 0;
@@ -74,17 +70,17 @@ const RatingBtn = styled(motion.div)`
   &:hover {
     background-color: rgba(54, 54, 54, 1);
   }
-  &:first-child svg {
+  &:first-child > svg {
     transform: rotate(180deg);
   }
-  &:last-child svg {
+  &:last-child > svg {
     position: absolute;
   }
-  &:last-child svg:first-child {
+  &:last-child > svg:first-child {
     z-index: 1;
     transform: translate(3px, -2px);
   }
-  &:last-child svg:last-child {
+  &:last-child > svg:last-child {
     z-index: 3;
     transform: translate(-2px, 1px);
   }
@@ -132,7 +128,7 @@ const ratingBtnBoxVarients = {
     opacity: 1,
     transition: { delay: 0.5, duration: 0.2, type: "tween" },
   },
-  rest: { scaleX: 0.7, opacity: 0, transition: { duration: 0.2 } },
+  rest: { scaleX: 0, opacity: 0, transition: { duration: 0.2 } },
 };
 
 const ratingBtnVariants = {

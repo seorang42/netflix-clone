@@ -70,7 +70,7 @@ const Input = styled(motion.input)`
   z-index: -1;
   color: white;
   font-size: 16px;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.6);
   border: 1px solid ${(props) => props.theme.white.lighter};
 `;
 
@@ -84,7 +84,7 @@ const Alarm = styled.div`
   align-items: center;
   margin-left: 30px;
   cursor: pointer;
-  svg {
+  & > svg {
     height: 20px;
   }
 `;
@@ -101,7 +101,7 @@ const Notice = styled.div`
   top: 0;
   left: auto;
   right: 0;
-  span {
+  & > span {
     color: white;
     font-size: 7px;
   }
@@ -113,7 +113,7 @@ const Profile = styled.div`
   margin-left: 30px;
   display: flex;
   cursor: pointer;
-  &:hover span > svg {
+  &:hover > span > svg {
     transform: rotate(0deg);
   }
 `;
@@ -132,7 +132,7 @@ const ProfileMore = styled.span`
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  svg {
+  & > svg {
     transform: rotate(-180deg);
     transition: transform 0.2s;
   }

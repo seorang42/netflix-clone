@@ -1,19 +1,20 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { styled } from "styled-components";
-import { backAtom, top10BoxHeightAtom } from "./atoms";
+import { backAtom, isBigMovieOpenAtom, top10BoxHeightAtom } from "./atoms";
 import { useNavigate } from "react-router-dom";
 import { makeImagePath } from "./utils";
 import { IGetMoviesResult, getList } from "./api";
 import { useQuery } from "react-query";
 import HoverInfo from "./HoverInfo";
+import ClickedInfo from "./ClickedInfo";
 
 const SliderWrapper = styled.div<{ boxHeight: number }>`
   position: relative;
   margin-top: 90px;
   height: ${(props) => `${props.boxHeight}px`};
-  p {
+  & > p {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -23,16 +24,16 @@ const SliderWrapper = styled.div<{ boxHeight: number }>`
     background-color: rgba(255, 255, 255, 0.1);
     cursor: pointer;
   }
-  &:hover p svg {
+  &:hover > p > svg {
     opacity: 1;
   }
-  p svg {
+  & > p > svg {
     transition: scale 0.1s ease-in;
   }
-  p:hover svg {
+  & > p:hover > svg {
     scale: 1.3;
   }
-  &:hover h1 h2:last-child {
+  &:hover > h1 > h2:last-child {
     opacity: 1;
   }
 `;
@@ -81,7 +82,7 @@ const Box = styled(motion.div)`
   &:last-child {
     transform-origin: center right;
   }
-  img {
+  & > img {
     position: absolute;
     display: block;
     width: 100%;
@@ -119,7 +120,7 @@ const SliderPrevBtn = styled.p`
   left: 0;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-  svg {
+  & > svg {
     font-size: 1.5rem;
     opacity: 0;
   }
@@ -129,7 +130,7 @@ const SliderNextBtn = styled.p`
   right: 0;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
-  svg {
+  & > svg {
     font-size: 1.5rem;
     opacity: 0;
   }
@@ -231,16 +232,16 @@ const offset = 6;
 interface ISlider {
   start?: number;
   title: string;
-  type: string;
+  apiLink: string;
   sliderKey: string;
 }
 
-function Top10Slider({ title, type, sliderKey }: ISlider) {
+function Top10Slider({ title, apiLink, sliderKey }: ISlider) {
   const queryFunction = () => {
-    return getList(type);
+    return getList(apiLink);
   };
   const { data: list, isLoading } = useQuery<IGetMoviesResult>(
-    [{ type }],
+    [sliderKey],
     queryFunction
   );
   const top10List = list?.results.slice(0, 10);
@@ -251,6 +252,7 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
   const [back, setBack] = useRecoilState(backAtom);
   const [leaving, setLeaving] = useState(false);
   const [index, setIndex] = useState(0);
+  const setIsBigMovieOpen = useSetRecoilState(isBigMovieOpenAtom);
   useEffect(() => {
     const handleResize = () => {
       if (boxRef.current && list && !isLoading) {
@@ -285,7 +287,8 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
   };
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number, movieTitle: string) => {
-    navigate(`/movies/${movieId}?sliderKey=${sliderKey}`);
+    setIsBigMovieOpen(true);
+    navigate(`info/${movieId}?sliderKey=${sliderKey}`);
     document.title = `${movieTitle} - 넷플릭스`;
   };
   return (
@@ -331,13 +334,17 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
               <Box
                 ref={boxRef}
                 key={movie.id}
-                layoutId={movie.id + `?sliderKey=${sliderKey}`}
+                layoutId={`${movie.id}?sliderKey=${sliderKey}`}
                 variants={boxVariants}
                 initial="normal"
                 whileHover="hover"
                 animate="rest"
                 transition={{ type: "tween" }}
-                onClick={() => onBoxClicked(movie.id, movie.title)}
+                onClick={() =>
+                  movie.title !== undefined
+                    ? onBoxClicked(movie.id, movie.title)
+                    : onBoxClicked(movie.id, movie.name)
+                }
               >
                 <BeforeBox variants={beforeBoxVariants}>
                   <Ranking>{sliderIndex + 1 + offset * index}</Ranking>
@@ -377,6 +384,7 @@ function Top10Slider({ title, type, sliderKey }: ISlider) {
           <path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
         </svg>
       </SliderNextBtn>
+      <ClickedInfo list={list!} />
     </SliderWrapper>
   );
 }

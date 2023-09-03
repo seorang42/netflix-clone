@@ -29,17 +29,17 @@ const FooterMenuBox = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 3fr);
   margin-bottom: 15px;
-  span {
+  & > span {
     margin-bottom: 15px;
   }
-  span a:hover {
+  & > span > a:hover {
     text-decoration: underline;
   }
 `;
 
 const ServiceCodeBox = styled.div`
   margin-bottom: 20px;
-  span {
+  & > span {
     display: inline-block;
     border: 1px solid;
     padding: 7px;
@@ -49,10 +49,10 @@ const ServiceCodeBox = styled.div`
 
 const FooterTextBox = styled.div`
   font-size: 0.7rem;
-  div {
+  & > div {
     margin-bottom: 5px;
   }
-  div a:hover {
+  & > div > a:hover {
     text-decoration: underline;
     cursor: pointer;
   }

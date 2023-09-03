@@ -3,12 +3,12 @@ import { IGetMoviesResult, getList } from "../api";
 import { styled } from "styled-components";
 import { Helmet } from "react-helmet";
 import { makeImagePath } from "../utils";
-import { AnimatePresence, motion } from "framer-motion";
-import { useMatch, useNavigate } from "react-router-dom";
 import Slider from "../Slider";
 import Footer from "../Footer";
 import Top10Slider from "../Top10Slider";
-import RatingBar from "../RatingBar";
+import { useEffect } from "react";
+import { useRecoilValue } from "recoil";
+import { isBigMovieOpenAtom } from "../atoms";
 
 const Wrapper = styled.div`
   background-color: rgba(20, 20, 20, 1);
@@ -61,7 +61,7 @@ const BtnBox = styled.div`
   margin-top: 20px;
   display: flex;
   gap: 10px;
-  div {
+  & > div {
     cursor: pointer;
     border-radius: 5px;
     padding: 12px 30px;
@@ -69,6 +69,9 @@ const BtnBox = styled.div`
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+  & > div > svg {
+    font-size: 24px;
   }
 `;
 
@@ -88,51 +91,18 @@ const SliderBox = styled.div`
   margin-top: -290px;
 `;
 
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-`;
-
-const BigMovie = styled(motion.div)`
-  position: fixed;
-  width: 40vw;
-  height: 80vh;
-  top: 10%;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  background-color: ${(props) => props.theme.black.lighter};
-  border-radius: 15px;
-  overflow: hidden;
-`;
-
-const BigCover = styled.div`
-  width: 100%;
-  height: 400px;
-  background-size: cover;
-  background-position: center center;
-`;
-
-const BigTitle = styled.h3`
-  color: ${(props) => props.theme.white.lighter};
-  padding: 20px;
-  font-size: 46px;
-  position: relative;
-  top: -80px;
-`;
-
-const BigOverview = styled.p`
-  position: relative;
-  top: -80px;
-  padding: 20px;
-  color: ${(props) => props.theme.white.lighter};
-`;
-
 function Home() {
+  const isBigMovieOpen = useRecoilValue(isBigMovieOpenAtom);
+  useEffect(() => {
+    if (isBigMovieOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isBigMovieOpen]);
   const queryFunction = () => {
     return getList("trending/all/day");
   };
@@ -140,16 +110,6 @@ function Home() {
     ["all", "trending"],
     queryFunction
   );
-  const navigate = useNavigate();
-  const bigMovieMatch = useMatch("movies/:movieId");
-  const urlSearchParams = new URLSearchParams(window.location.search);
-  const sliderKey = urlSearchParams.get("sliderKey");
-  const onOverlayClicked = () => navigate(-1);
-  const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    list?.results.find(
-      (movie) => String(movie.id) === bigMovieMatch.params.movieId
-    );
   return (
     <Wrapper>
       <Helmet>
@@ -198,64 +158,29 @@ function Home() {
               start={1}
               sliderKey="1"
               title="지금 뜨는 콘텐츠"
-              type="trending/all/day"
+              apiLink="trending/all/day"
             />
             <Top10Slider
-              sliderKey="4"
+              sliderKey="2"
               title="오늘의 TOP 10 영화"
-              type="trending/movie/day"
+              apiLink="trending/movie/day"
             />
             <Slider
-              sliderKey="2"
+              sliderKey="3"
               title="최고의 평가를 받은 영화"
-              type="movie/top_rated"
+              apiLink="movie/top_rated"
             />
             <Top10Slider
               sliderKey="4"
               title="오늘의 TOP 10 시리즈"
-              type="trending/tv/day"
+              apiLink="trending/tv/day"
             />
             <Slider
-              sliderKey="3"
+              sliderKey="5"
               title="최고의 평가를 받은 시리즈"
-              type="tv/top_rated"
+              apiLink="tv/top_rated"
             />
           </SliderBox>
-          <AnimatePresence>
-            {bigMovieMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClicked}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={
-                    bigMovieMatch.params.movieId + `?sliderKey=${sliderKey}`
-                  }
-                >
-                  {clickedMovie && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedMovie.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>
-                        {clickedMovie.title !== undefined
-                          ? clickedMovie.title
-                          : clickedMovie.name}
-                      </BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
-                    </>
-                  )}
-                </BigMovie>
-              </>
-            ) : null}
-          </AnimatePresence>
         </>
       )}
       <Footer />
