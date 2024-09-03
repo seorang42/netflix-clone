@@ -4,7 +4,7 @@
 
 ---
 
-- [NomadCoders](https://nomadcoders.co)에서 제공하는 강의 'React JS 마스터클래스' 중 OTT 서비스 플랫폼인 Netflix의 메인 페이지를 모방하여 구현하는 프로젝트 입니다.
+- [NomadCoders](https://nomadcoders.co)에서 제공하는 강의 'React JS 마스터클래스' 중 OTT 서비스 플랫폼인 Netflix의 메인 페이지를 모방하여 구현하는 프로젝트입니다.
 
 ### 기술 스택
 
