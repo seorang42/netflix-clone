@@ -1,4 +1,4 @@
-## Netflix Clone
+## Netflix 클론 코딩 - Netflix Clone Coding
 
 ### 프로젝트 정보
 
